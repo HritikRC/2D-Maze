@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Maze Generator</title>
+	<style type="text/css">
+		body {
+			background : orange;
+		}
+		canvas {
+			margin-left : 20%;
+		}
+	</style>
+</head>
+<body>
+	<script src = "p52.js"></script>
+
+	<script type="text/javascript">
+		const rows = 40;
+		const cols = 40;
+		const size = 10;
+
+		function Cell(x, y){
+			this.x = x;
+			this.y = y;
+			this.linesShown = {right : true, left : true, up : true, down : true};
+			this.visited = false;
+
+			this.availableNeighbours = function(){
+				var xPos = this.x / size;
+				var yPos = this.y / size;
+				var neighbours = [];
+				if(xPos != cols - 1){
+					if(tiles[yPos][xPos + 1].visited == false){ // right
+						neighbours.push("right");
+					}
+				}
+				if(xPos != 0){
+					if(tiles[yPos][xPos - 1].visited == false){ // left
+						neighbours.push("left");
+					}
+				}
+				if(yPos != 0){
+					if(tiles[yPos - 1][xPos].visited == false){ // up
+						neighbours.push("up");
+					}
+				}
+				if(yPos != rows - 1){
+					if(tiles[yPos + 1][xPos].visited == false){ // down
+						neighbours.push("down");
+					}
+				}
+				return neighbours;
+			}
+
+			this.display = function(){
+				if(this.visited){
+					noStroke();
+					fill(255);
+					rect(this.x, this.y, size, size);
+				}
+
+				stroke(0);
+				if(this.linesShown.right){
+					line(this.x + size, this.y, this.x + size, this.y + size);
+				}
+				if(this.linesShown.left){
+					line(this.x, this.y, this.x, this.y + size);
+				}
+				if(this.linesShown.up){
+					line(this.x, this.y, this.x + size, this.y);
+				}
+				if(this.linesShown.down){
+					line(this.x, this.y + size, this.x + size, this.y + size);
+				}
+			}
+		}
+
+		var tiles = [];
+		var startX = 5;
+		var startY = 5;
+		var endX = 25;
+		var endY = 25;
+		var x = startX;
+		var y = startY;
+		function setup(){
+			createCanvas((size * cols) + 1, (size * rows) + 1);
+
+			for(var i = 0; i < rows; i++){
+				var tileRow = [];
+				for(var j = 0; j < cols; j++){
+					tileRow.push(new Cell(j * size, i * size));
+				}
+				tiles.push(tileRow);
+			}
+
+			tiles[y][x].visited = true;
+		}
+
+		var track = [{x : x, y : y}];
+		var index = 1;
+		function draw(){
+			background(50);
+
+			if(count != 0){
+				var count = 0;
+				for(var i = 0; i < tiles.length; i++){
+					for(var j = 0; j < tiles[i].length; j++){
+						if(!tiles[i][j].visited){
+							count++;
+						}
+					}
+				}
+			}
+
+			for(var i = 0; i < tiles.length; i++){
+				for(var j = 0; j < tiles[i].length; j++){
+					tiles[i][j].display();
+				}
+			}
+
+			if(count == 0){
+				noFill();	
+				noStroke();
+			} else {
+				fill(255, 0, 0);
+			}
+
+			rect(x * size, y * size, size, size);
+
+			if(count == 0){
+				noLoop();
+			} else {
+				var direction = random(["right", "left", "up", "down"]);
+				if(tiles[y][x].availableNeighbours()[0] == undefined){
+					index--;
+					x = track[index].x;
+					y = track[index].y;
+				} else {
+					if(direction == "right" && x != cols - 1){
+						if(tiles[y][x + 1].visited == false){
+							index++;
+							tiles[y][x + 1].visited = true;
+							track.splice(index, 0, {x : x + 1, y : y});
+							tiles[y][x].linesShown.right = false;
+							tiles[y][x + 1].linesShown.left = false;
+							x++;
+						}
+					} else if(direction == "left" && x != 0){
+						if(tiles[y][x - 1].visited == false){
+							index++;
+							tiles[y][x - 1].visited = true;
+							track.splice(index, 0, {x : x - 1, y : y});
+							tiles[y][x].linesShown.left = false;
+							tiles[y][x - 1].linesShown.right = false;
+							x--;
+						}
+					} else if(direction == "up" && y != 0){
+						if(tiles[y - 1][x].visited == false){
+							index++;
+							tiles[y - 1][x].visited = true;
+							track.splice(index, 0, {x : x, y : y - 1});
+							tiles[y][x].linesShown.up = false;
+							tiles[y - 1][x].linesShown.down = false;
+							y--;
+						}
+					} else if(direction == "down" && y != rows - 1){
+						if(tiles[y + 1][x].visited == false){
+							index++;
+							tiles[y + 1][x].visited = true;
+							track.splice(index, 0, {x : x, y : y + 1});
+							tiles[y][x].linesShown.down = false;
+							tiles[y + 1][x].linesShown.up = false;
+							y++;
+						}
+					}
+				}
+			}
+
+			noStroke();
+			//starting rectangle
+			fill(0, 0, 255);
+			rect((startX * size) + (size * 0.1), (startY * size) + (size * 0.1), size * 0.8, size * 0.8);
+			//ending rectangle
+			fill(0, 255, 0);
+			rect((endX * size) + (size * 0.1), (endY * size) + (size * 0.1), size * 0.8, size * 0.8);
+		}
+	</script>
+</body>
+</html>
+
+
+
+
+
+
